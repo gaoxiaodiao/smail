@@ -31,6 +31,7 @@ import { d1Wrapper } from "~/.server/db";
 import { sessionWrapper } from "~/.server/session";
 import { CopyButton } from "~/components/copy-button";
 import { Button, buttonVariants } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
 	Card,
 	CardDescription,
@@ -102,7 +103,8 @@ export async function action({ request, context }: ActionFunctionArgs) {
 	const { getSession, commitSession } = sessionWrapper(context.cloudflare.env);
 	const session = await getSession(request.headers.get("Cookie"));
 	const { pathname } = new URL(request.url);
-	const name = `${randomName("", ".")}.${customAlphabet("0123456789", 4)()}`;
+	const inputName = (await request.formData()).get("name") as string;
+	const name = inputName != "" ? inputName : `${randomName("", ".")}.${customAlphabet("0123456789", 4)()}`;
 	const email = `${name}@${context.cloudflare.env.DOMAIN || "smail.pw"}`;
 	switch (request.method) {
 		case "POST": {
@@ -191,6 +193,7 @@ export default function Index() {
 							onSuccess={setToken}
 							className="h-[65px] w-[300px] items-center bg-secondary"
 						/>
+						<Input type="text" name="name"/>
 						<Button
 							disabled={navigation.state === "submitting" || token === ""}
 						>
